@@ -13,6 +13,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,30 +30,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("jobs")
 public class JobsController {
 
-    private final List<Job> jobs;
+    private final JobRegistry jobRegistry;
     private final JobLauncher jobLauncher;
     private final JobExplorer jobRepository;
 
     public JobsController(
-            List<Job> jobs,
+            JobRegistry jobRegistry,
             @Qualifier("batchJobLauncher") JobLauncher jobLauncher,
             JobExplorer jobRepository) {
-        this.jobs = jobs;
+        this.jobRegistry = jobRegistry;
         this.jobLauncher = jobLauncher;
         this.jobRepository = jobRepository;
     }
 
     @PostMapping
-    public void run() throws Exception {
-        Job job = jobs.get(0);
+    public JobStatus run() throws Exception {
+        Job job = jobRegistry.getJob("test-job");
         HashMap<String, JobParameter> params = new HashMap<>();
         params.put("requestId", new JobParameter(UUID.randomUUID().toString()));
-        jobLauncher.run(job, new JobParameters(params));
+        return JobStatus.fromExecution(jobLauncher.run(job, new JobParameters(params)));
     }
 
     @GetMapping
     public List<JobStatus> index() {
-        List<JobInstance> jobInstances = jobRepository.findJobInstancesByJobName("importUserJob", 0, 10);
+        List<JobInstance> jobInstances = jobRepository.findJobInstancesByJobName("test-job", 0, 10);
         return jobInstances
                 .stream()
                 .map(i -> jobRepository.getLastJobExecution(i))

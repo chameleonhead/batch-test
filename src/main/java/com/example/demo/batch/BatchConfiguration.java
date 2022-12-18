@@ -4,7 +4,9 @@ import javax.sql.DataSource;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
@@ -36,7 +38,14 @@ public class BatchConfiguration {
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
     }
-    
+
+    @Bean
+    public JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor(JobRegistry jobRegistry) {
+        JobRegistryBeanPostProcessor postProcessor = new JobRegistryBeanPostProcessor();
+        postProcessor.setJobRegistry(jobRegistry);
+        return postProcessor;
+    }
+
     @Bean
     public FlatFileItemReader<Person> reader() {
         return new FlatFileItemReaderBuilder<Person>()
@@ -67,9 +76,9 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Job importUserJob(JobRepository jobRepository,
+    public Job testJob(JobRepository jobRepository,
             JobCompletionNotificationListener listener, Step step1) {
-        return new JobBuilder("importUserJob")
+        return new JobBuilder("test-job")
                 .repository(jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
