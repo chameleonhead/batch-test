@@ -23,10 +23,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @EnableBatchProcessing
+@EnableScheduling
 public class BatchConfiguration {
 
     // 標準の名前(jobLauncher)とは別のBeanとして登録（同じ名前にするとエラーになる）
